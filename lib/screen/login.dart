@@ -55,7 +55,6 @@ class _LoginState extends State<Login> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-
                               TextFormField(
                                 style: TextStyle(color: Color(0xFF000000)),
                                 cursorColor: Color(0xFF9b9b9b),
@@ -171,32 +170,34 @@ class _LoginState extends State<Login> {
     setState(() {
       _isLoading = true;
     });
-
     var data = {
-      'name' : email,
+      'email' : email,
       'password' : password
     };
 
-    var res = await Network().prd();
+    var userObjectId = await Network().getUserObject();
+    Map<String,dynamic> list = json.decode(userObjectId.body);
+    var prd = list['results'];
+    print(prd[1]);
+    final finalUser = prd.firstWhere((e) => e['email'] == email && e['password'] == password );
+    print(finalUser);
+    if(finalUser['email']== email && finalUser['password']== password){
+      SharedPreferences localStorage = await SharedPreferences.getInstance();
+      localStorage.setString('objectId', json.encode(finalUser['objectId']));
+      localStorage.setString('user', json.encode(finalUser['user']));
+      Navigator.push(
+        context,
+        new MaterialPageRoute(
+            builder: (context) => Home()
+        ),
+      );
+    }else{
+      _showMsg('Wrong email or password');
+    }
 
-    // var body = json.decode(res.body);
-    // if(body['success']){
-    //   SharedPreferences localStorage = await SharedPreferences.getInstance();
-    //   localStorage.setString('token', json.encode(body['token']));
-    //   localStorage.setString('user', json.encode(body['user']));
-    //   Navigator.push(
-    //     context,
-    //     new MaterialPageRoute(
-    //         builder: (context) => Home()
-    //     ),
-    //   );
-    // }else{
-    //   _showMsg(body['message']);
-    // }
-    //
-    // setState(() {
-    //   _isLoading = false;
-    // });
+    setState(() {
+      _isLoading = false;
+    });
 
   }
 }

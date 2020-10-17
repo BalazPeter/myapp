@@ -16,9 +16,10 @@ class _RegisterState extends State<Register> {
   final _formKey = GlobalKey<FormState>();
   var email;
   var password;
-  var fname;
+  var username;
   var lname;
   var phone;
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -45,7 +46,6 @@ class _RegisterState extends State<Register> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-
                               TextFormField(
                                 style: TextStyle(color: Color(0xFF000000)),
                                 cursorColor: Color(0xFF9b9b9b),
@@ -88,53 +88,7 @@ class _RegisterState extends State<Register> {
                                   if (firstname.isEmpty) {
                                     return 'Please enter your first name';
                                   }
-                                  fname = firstname;
-                                  return null;
-                                },
-                              ),
-                              TextFormField(
-                                style: TextStyle(color: Color(0xFF000000)),
-                                cursorColor: Color(0xFF9b9b9b),
-                                keyboardType: TextInputType.text,
-                                decoration: InputDecoration(
-                                  prefixIcon: Icon(
-                                    Icons.insert_emoticon,
-                                    color: Colors.grey,
-                                  ),
-                                  hintText: "Last Name",
-                                  hintStyle: TextStyle(
-                                      color: Color(0xFF9b9b9b),
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.normal),
-                                ),
-                                validator: (lastname) {
-                                  if (lastname.isEmpty) {
-                                    return 'Please enter your last name';
-                                  }
-                                  lname = lastname;
-                                  return null;
-                                },
-                              ),
-                              TextFormField(
-                                style: TextStyle(color: Color(0xFF000000)),
-                                cursorColor: Color(0xFF9b9b9b),
-                                keyboardType: TextInputType.text,
-                                decoration: InputDecoration(
-                                  prefixIcon: Icon(
-                                    Icons.phone,
-                                    color: Colors.grey,
-                                  ),
-                                  hintText: "Phone",
-                                  hintStyle: TextStyle(
-                                      color: Color(0xFF9b9b9b),
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.normal),
-                                ),
-                                validator: (phonenumber) {
-                                  if (phonenumber.isEmpty) {
-                                    return 'Please enter phone number';
-                                  }
-                                  phone = phonenumber;
+                                  username = firstname;
                                   return null;
                                 },
                               ),
@@ -169,7 +123,9 @@ class _RegisterState extends State<Register> {
                                     padding: EdgeInsets.only(
                                         top: 8, bottom: 8, left: 10, right: 10),
                                     child: Text(
-                                      _isLoading? 'Proccessing...' : 'Register',
+                                      _isLoading
+                                          ? 'Proccessing...'
+                                          : 'Register',
                                       textDirection: TextDirection.ltr,
                                       style: TextStyle(
                                         color: Colors.white,
@@ -196,7 +152,6 @@ class _RegisterState extends State<Register> {
                         ),
                       ),
                     ),
-
                     Padding(
                       padding: const EdgeInsets.only(top: 20),
                       child: InkWell(
@@ -226,33 +181,38 @@ class _RegisterState extends State<Register> {
       ),
     );
   }
-  void _register()async{
+
+  void _register() async {
     setState(() {
       _isLoading = true;
     });
 
     var data = {
-      'name' : fname,
+      'username': username,
       'email': email,
       'password': password
     };
 
-    var res = await Network().senData(data);
-    // var body = json.decode(res.body);
-    // if(body['success']){
-    //   SharedPreferences localStorage = await SharedPreferences.getInstance();
-    //   localStorage.setString('token', json.encode(body['token']));
-    //   localStorage.setString('user', json.encode(body['user']));
-    //   Navigator.push(
-    //     context,
-    //     new MaterialPageRoute(
-    //         builder: (context) => Home()
-    //     ),
-    //   );
+    var res = await Network().userRegistration(data);
+    var body = json.decode(res.body);
+    var userObjectId = await Network().getUserObject();
+    Map<String,dynamic> list = json.decode(userObjectId.body);
+    final UserId = list['results'].firstWhere((e) => e['objectId'] == body['objectId']);
+    print(UserId['username']);
+    if (UserId['objectId']==body['objectId']) {
+      SharedPreferences localStorage = await SharedPreferences.getInstance();
+      localStorage.setString('objectId', json.encode(UserId['objectId']).toString());
+      localStorage.setString('username', json.encode(UserId['username']));
+      Navigator.push(
+        context,
+        new MaterialPageRoute(
+            builder: (context) => Home()
+        ),
+      );
 
-
-    setState(() {
-      _isLoading = false;
-    });
-   }
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 }

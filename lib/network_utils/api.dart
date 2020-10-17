@@ -5,83 +5,58 @@ import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Network{
-  final String url = 'http://bb9d8bb80904.ngrok.io/api/user/register';
-  final headers = {    "Content-Type": "application/json",  };
+  // final String url = 'http://bb9d8bb80904.ngrok.io/api/user/register';
+  final String urlBack4app = 'https://parseapi.back4app.com/classes/Register';
 
   var token;
 
   _getToken() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
-    token = jsonDecode(localStorage.getString('token'))['token'];
+    token = jsonDecode(localStorage.getString('objectId'))['objectId'];
   }
 
-  // authData(data) async {
-  //   http.post(url,
-  //       headers: headers,
-  //       body: jsonEncode(data),
-  //   );
-  //   print(data);
-  // }
+  final headers = {    "X-Parse-Application-Id": "4wPCODxh5iISTB3Kuohk5azPnqhVuP7n3Ed0EkL1",
+    "X-Parse-REST-API-Key": "MxPfYoupFhM2HscMRO6kwCZ64hsXjUnpGkpi3XKA",
+    "Content-Type": "application/json"
+  };
 
-  Future<http.Response> senData(data) async  {
-    print(jsonEncode(data));
-    final http.Response response = await http.post(url,
-        headers: _setHeaders(),
+
+  Future<http.Response> userRegistration(data) async  {
+    final http.Response response = await http.post(urlBack4app,
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 201) {
+      return response;
+    } else {
+      throw Exception(response.body);
+    }
+  }
+
+  Future<http.Response> getUserObject() async  {
+    final http.Response response = await http.get(urlBack4app,
+      headers: {"X-Parse-Application-Id": "4wPCODxh5iISTB3Kuohk5azPnqhVuP7n3Ed0EkL1",
+        "X-Parse-REST-API-Key": "MxPfYoupFhM2HscMRO6kwCZ64hsXjUnpGkpi3XKA"},
+    );
+    if (response.statusCode == 200) {
+      return response;
+    } else {
+      throw Exception(response.body);
+    }
+  }
+
+
+  authData(data, apiUrl) async {
+    var fullUrl = urlBack4app + apiUrl;
+    return await http.post(
+        fullUrl,
         body: jsonEncode(data),
+        headers: _setHeaders()
     );
-    if (response.statusCode == 200) {
-      print("Haloooooooooo");
-      print(response.body);
-    } else {
-      throw Exception(response.body);
-    }
   }
-
-
-  // Future<http.Response> LoginUser(data) async  {
-  //   final http.Response response = await http.post('http://bb9d8bb80904.ngrok.io/api/user/login',
-  //     headers: _setHeaders(),
-  //     body: jsonEncode(data),
-  //   );
-  //   if (response.statusCode == 200) {
-  //     print("Haloooooooooo");
-  //     print(response.body);
-  //   } else {
-  //     throw Exception(response.body);
-  //   }
-  // }
-
-  Future<http.Response> prd() async  {
-    final http.Response response = await http.post('http://bb9d8bb80904.ngrok.io/api/test',
-      headers: _setHeaders(),
-      // body: jsonEncode(data),
-    );
-    if (response.statusCode == 200) {
-      print("Haloooooooooo");
-      print(response.body);
-    } else {
-      throw Exception(response.body);
-    }
-  }
-
-
-  // Future<http.Response> creatUsr(data) {
-  //   return http.post(url,
-  //     headers: headers,
-  //     body: jsonEncode(data),
-  //   );
-  // }
-
-  // makePostRequest(data) async {
-  //   Response response = await post( url,
-  //     headers: headers,
-  //     body: jsonEncode(data));
-  //   int statusCode = response.statusCode;
-  //   String body = response.body;
-  // }
 
   getData(apiUrl) async {
-    var fullUrl = url;
+    var fullUrl = urlBack4app;
     await _getToken();
     return await http.get(
         fullUrl,

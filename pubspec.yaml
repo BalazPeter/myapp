@@ -22,7 +22,11 @@ environment:
 
 dependencies:
   shared_preferences: ^0.5.6+1
+  google_maps_flutter: ^0.5.27+3
+  permission: ^0.1.7
+  permission_handler: ^4.4.0+hotfix.2
   http: ^0.12.0+4
+  location: ^3.0.2
   flutter:
     sdk: flutter
 
@@ -45,8 +49,7 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-  assets:
-     - assets/userData.json
+  #assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
