@@ -16,9 +16,7 @@ class _RegisterState extends State<Register> {
   final _formKey = GlobalKey<FormState>();
   var email;
   var password;
-  var username;
-  var lname;
-  var phone;
+  var name;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +61,7 @@ class _RegisterState extends State<Register> {
                                 ),
                                 validator: (emailValue) {
                                   if (emailValue.isEmpty) {
-                                    return 'Please enter email';
+                                    return 'Prosím vložte email';
                                   }
                                   email = emailValue;
                                   return null;
@@ -78,7 +76,7 @@ class _RegisterState extends State<Register> {
                                     Icons.insert_emoticon,
                                     color: Colors.grey,
                                   ),
-                                  hintText: "First Name",
+                                  hintText: "Meno používateľa",
                                   hintStyle: TextStyle(
                                       color: Color(0xFF9b9b9b),
                                       fontSize: 15,
@@ -86,9 +84,9 @@ class _RegisterState extends State<Register> {
                                 ),
                                 validator: (firstname) {
                                   if (firstname.isEmpty) {
-                                    return 'Please enter your first name';
+                                    return 'Prosím vložte meno používateľa';
                                   }
-                                  username = firstname;
+                                  name = firstname;
                                   return null;
                                 },
                               ),
@@ -102,7 +100,7 @@ class _RegisterState extends State<Register> {
                                     Icons.vpn_key,
                                     color: Colors.grey,
                                   ),
-                                  hintText: "Password",
+                                  hintText: "Heslo",
                                   hintStyle: TextStyle(
                                       color: Color(0xFF9b9b9b),
                                       fontSize: 15,
@@ -110,7 +108,7 @@ class _RegisterState extends State<Register> {
                                 ),
                                 validator: (passwordValue) {
                                   if (passwordValue.isEmpty) {
-                                    return 'Please enter some text';
+                                    return 'Prosím vložte heslo';
                                   }
                                   password = passwordValue;
                                   return null;
@@ -124,8 +122,8 @@ class _RegisterState extends State<Register> {
                                         top: 8, bottom: 8, left: 10, right: 10),
                                     child: Text(
                                       _isLoading
-                                          ? 'Proccessing...'
-                                          : 'Register',
+                                          ? 'Prebieha...'
+                                          : 'Registracia',
                                       textDirection: TextDirection.ltr,
                                       style: TextStyle(
                                         color: Colors.white,
@@ -162,7 +160,7 @@ class _RegisterState extends State<Register> {
                                   builder: (context) => Login()));
                         },
                         child: Text(
-                          'Already Have an Account',
+                          'Už mám vytvorený účet',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 15.0,
@@ -188,31 +186,34 @@ class _RegisterState extends State<Register> {
     });
 
     var data = {
-      'username': username,
+      'name': name,
       'email': email,
       'password': password
     };
 
-    var res = await Network().userRegistration(data);
-    var body = json.decode(res.body);
-    var userObjectId = await Network().getUserObject();
-    Map<String,dynamic> list = json.decode(userObjectId.body);
-    final UserId = list['results'].firstWhere((e) => e['objectId'] == body['objectId']);
-    print(UserId['username']);
-    if (UserId['objectId']==body['objectId']) {
+    var res = await Network().userRegistration(data,"register");
+    if (res.statusCode == 201) {
+      var body = json.decode(res.body);
+      var name = body["user"]["name"];
+      var token = body["access_token"];
+      var userId = body["user"]["id"];
       SharedPreferences localStorage = await SharedPreferences.getInstance();
-      localStorage.setString('objectId', json.encode(UserId['objectId']).toString());
-      localStorage.setString('username', json.encode(UserId['username']));
+      localStorage.setInt('id', userId);
+      localStorage.setString('token', token);
+      localStorage.setString('name', name);
       Navigator.push(
         context,
         new MaterialPageRoute(
             builder: (context) => Home()
         ),
       );
+    } else {
+      throw Exception(res.statusCode);
+    }
 
       setState(() {
         _isLoading = false;
       });
     }
   }
-}
+// }

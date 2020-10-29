@@ -12,14 +12,16 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   bool _isLoading = false;
   final _formKey = GlobalKey<FormState>();
-  var email;
+  var name;
   var password;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool connected;
+
   _showMsg(msg) {
     final snackBar = SnackBar(
       content: Text(msg),
       action: SnackBarAction(
-        label: 'Close',
+        label: 'Zatvoriť',
         onPressed: () {
           // Some code to undo the change!
         },
@@ -64,17 +66,17 @@ class _LoginState extends State<Login> {
                                     Icons.email,
                                     color: Colors.grey,
                                   ),
-                                  hintText: "Email",
+                                  hintText: "Prihlasovacie meno",
                                   hintStyle: TextStyle(
                                       color: Color(0xFF9b9b9b),
                                       fontSize: 15,
                                       fontWeight: FontWeight.normal),
                                 ),
-                                validator: (emailValue) {
-                                  if (emailValue.isEmpty) {
-                                    return 'Please enter email';
+                                validator: (nameValue) {
+                                  if (nameValue.isEmpty) {
+                                    return 'Prosím vložte meno';
                                   }
-                                  email = emailValue;
+                                  name = nameValue;
                                   return null;
                                 },
                               ),
@@ -88,7 +90,7 @@ class _LoginState extends State<Login> {
                                     Icons.vpn_key,
                                     color: Colors.grey,
                                   ),
-                                  hintText: "Password",
+                                  hintText: "Heslo",
                                   hintStyle: TextStyle(
                                       color: Color(0xFF9b9b9b),
                                       fontSize: 15,
@@ -96,7 +98,7 @@ class _LoginState extends State<Login> {
                                 ),
                                 validator: (passwordValue) {
                                   if (passwordValue.isEmpty) {
-                                    return 'Please enter some text';
+                                    return 'Prosím zadajte heslo';
                                   }
                                   password = passwordValue;
                                   return null;
@@ -109,7 +111,7 @@ class _LoginState extends State<Login> {
                                     padding: EdgeInsets.only(
                                         top: 8, bottom: 8, left: 10, right: 10),
                                     child: Text(
-                                      _isLoading? 'Proccessing...' : 'Login',
+                                      _isLoading? 'Prihlasovanie...' : 'Prihlásiť',
                                       textDirection: TextDirection.ltr,
                                       style: TextStyle(
                                         color: Colors.white,
@@ -147,7 +149,7 @@ class _LoginState extends State<Login> {
                                   builder: (context) => Register()));
                         },
                         child: Text(
-                          'Create new Account',
+                          'Vytvoriť nový účet',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 15.0,
@@ -170,29 +172,31 @@ class _LoginState extends State<Login> {
     setState(() {
       _isLoading = true;
     });
+
     var data = {
-      'email' : email,
+      'name' : name,
       'password' : password
     };
 
-    var userObjectId = await Network().getUserObject();
-    Map<String,dynamic> list = json.decode(userObjectId.body);
-    var prd = list['results'];
-    print(prd[1]);
-    final finalUser = prd.firstWhere((e) => e['email'] == email && e['password'] == password );
-    print(finalUser);
-    if(finalUser['email']== email && finalUser['password']== password){
+    var res = await Network().loginUser(data,"login");
+    if (res.statusCode == 200) {
+      var body = json.decode(res.body);
+      var name = body["user"]["name"];
+      var id = body["user"]["id"];
+      var token = body["access_token"];
       SharedPreferences localStorage = await SharedPreferences.getInstance();
-      localStorage.setString('objectId', json.encode(finalUser['objectId']));
-      localStorage.setString('user', json.encode(finalUser['user']));
+      localStorage.setString('token', token);
+      localStorage.setString('name', name);
+      localStorage.setInt('id', id);
       Navigator.push(
         context,
         new MaterialPageRoute(
             builder: (context) => Home()
         ),
       );
-    }else{
-      _showMsg('Wrong email or password');
+    } else {
+      _showMsg('Zlé meno alebo heslo');
+      throw Exception(res.statusCode);
     }
 
     setState(() {
