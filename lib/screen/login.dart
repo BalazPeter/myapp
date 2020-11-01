@@ -10,6 +10,8 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+
+  // definícia globalných premenných
   bool _isLoading = false;
   final _formKey = GlobalKey<FormState>();
   var name;
@@ -17,21 +19,23 @@ class _LoginState extends State<Login> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool connected;
 
+  // modal okno pri chybných údajoch
+  // uzatvorenie funguje na kliknutie mimo modal okna
   _showMsg(msg) {
     final snackBar = SnackBar(
       content: Text(msg),
       action: SnackBarAction(
         label: 'Zatvoriť',
         onPressed: () {
-          // Some code to undo the change!
+          // TODO: vyriešiť button na zatvorenie
         },
       ),
     );
     _scaffoldKey.currentState.showSnackBar(snackBar);
   }
+// TODO: doplnenie dizajnu
   @override
   Widget build(BuildContext context) {
-    // Build a Form widget using the _formKey created above.
     return Scaffold(
       key: _scaffoldKey,
       body: Container(
@@ -168,6 +172,9 @@ class _LoginState extends State<Login> {
       ),
     );
   }
+
+  //login funkcia- získanie dát z formulára a odoslanie na overenie
+  // spracovanie responsu z databazy
   void _login() async{
     setState(() {
       _isLoading = true;
@@ -184,10 +191,13 @@ class _LoginState extends State<Login> {
       var name = body["user"]["name"];
       var id = body["user"]["id"];
       var token = body["access_token"];
+      print(token);
       SharedPreferences localStorage = await SharedPreferences.getInstance();
       localStorage.setString('token', token);
       localStorage.setString('name', name);
       localStorage.setInt('id', id);
+      var prd = localStorage.getString('token');
+      print(prd);
       Navigator.push(
         context,
         new MaterialPageRoute(

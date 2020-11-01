@@ -12,12 +12,13 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
+  // definícia premenných a global key pre formulár
   bool _isLoading = false;
   final _formKey = GlobalKey<FormState>();
   var email;
   var password;
   var name;
-
+// TODO: doplnenie dizajnu
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -180,6 +181,9 @@ class _RegisterState extends State<Register> {
     );
   }
 
+  // funkcia na registráciu užívateľa- spracovanie dát z formuláru
+  // odoslanie dát na db a spracovanie responsu taktiež presmerovanie
+  // používateľa na screen Homepage
   void _register() async {
     setState(() {
       _isLoading = true;
@@ -216,4 +220,3 @@ class _RegisterState extends State<Register> {
       });
     }
   }
-// }

@@ -10,7 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:location/location.dart' as lct;
 
-import 'home_page.dart';
+import 'reportLandfill.dart';
 import 'listOfEvents.dart';
 
 class Home extends StatefulWidget {
@@ -19,25 +19,26 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home>{
-
+// zadefinovanie premenných/vytvorenie inštancií pre formulár
+// permission map kontroler
   final PermissionHandler permissionHandler = PermissionHandler();
   Map<PermissionGroup, PermissionStatus> permissions;
   String name;
   Completer<GoogleMapController> _controller = Completer();
-  static const LatLng _center = const LatLng(22.521563, -125.677433);
+  static const LatLng _center = const LatLng(48, 20);
   final Set<Marker> _markers = {};
   LatLng _lastMapPosition = _center;
-  MapType _currentMapType = MapType.normal;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool dumps = false;
   bool collectionYard = false;
   bool cleanEvents = false;
 
-
+  // funkcia na vykreslenie side menu
   void _openEndDrawer() {
     _scaffoldKey.currentState.openEndDrawer();
   }
 
+  // funkcia na vyžiadanie perrmisnu ktorá vracia bool
   Future<bool> _requestPermission(PermissionGroup permission) async {
     final PermissionHandler _permissionHandler = PermissionHandler();
     var result = await _permissionHandler.requestPermissions([permission]);
@@ -47,7 +48,7 @@ class _HomeState extends State<Home>{
     return false;
   }
 
-/*Checking if your App has been Given Permission*/
+  //Kontrola či aplikácia dostala permission*/
   Future<bool> requestLocationPermission({Function onPermissionDenied}) async {
     var granted = await _requestPermission(PermissionGroup.location);
     if (granted!=true) {
@@ -57,13 +58,9 @@ class _HomeState extends State<Home>{
     return granted;
   }
 
-
-  void _onMapTypeButtonPressed() async {
-    setState(() {
-      _currentMapType = _currentMapType == MapType.normal ? MapType.satellite : MapType.normal;
-    });
-  }
-
+  // zatiaľ exemple pre pridávanie markerov na mapu
+  // TODO: vytvorenie cyklu na pridávanie všetkých markerov
+  // TODO: pre skládky, dvory, clean eventy
   _onAddMarkerButtonPressed (){
     setState(() {
       _markers.add(Marker(
@@ -79,14 +76,15 @@ class _HomeState extends State<Home>{
     });
   }
 
+  // funkcia na hlandling pohybu po mape
   _onCameraMove(CameraPosition position) async{
-    var prd = position.target;
+    var targetpos = position.target;
     setState(() {
-      _lastMapPosition = prd;
+      _lastMapPosition = targetpos;
     });
   }
 
-
+  // funkcia na získanie aktuálnej polohy
   void _currentLocation() async {
     final GoogleMapController controller = await _controller.future;
     lct.LocationData currentLocation;
@@ -105,7 +103,8 @@ class _HomeState extends State<Home>{
     ));
   }
 
-
+  // inicializácia počiatočného stavu
+  // TODO: vložiť a vytvoriť funkciu na pridávanie markerov
   @override
   void initState(){
     _loadUserData();
@@ -121,6 +120,7 @@ class _HomeState extends State<Home>{
         position: LatLng(40.7128, -74.0060)));
   }
 
+  // načítanie dát používateľa
   _loadUserData() async{
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     var user = jsonDecode(localStorage.getString('username'));
@@ -131,7 +131,7 @@ class _HomeState extends State<Home>{
     }
   }
 
-
+// TODO: dizajn, opraviť filter, vložiť položky do side menu
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -264,6 +264,8 @@ class _HomeState extends State<Home>{
     );
   }
 
+  //vytvorenie modal okna pre filter aj so všetkými položkami
+  // TODO: po pridaní funkcie na marker vytvoriť ich filtráciu
   void _showFilterMenu(BuildContext context) {
     showModalBottomSheet(
         isScrollControlled: true,
@@ -379,43 +381,41 @@ class _HomeState extends State<Home>{
           );
         });
   }
-
+// funkcia
   void _onDumpEvents(bool newValue) => setState(() {
     dumps = newValue;
-
     if (dumps) {
-      // TODO: Here goes your functionality that remembers the user.
+      // TODO: funkcia pre spracovanie skládok a zobrazenie ich na mape
       print("prd");
     } else {
-      // TODO: Forget the user
+      // TODO: zrušenie zobrazenia skládok na mape
       print("prd2");
     }
 
   });
   void _onCollectionYard(bool newValue) => setState(() {
     collectionYard = newValue;
-
     if (collectionYard) {
-      // TODO: Here goes your functionality that remembers the user.
+      // TODO: funkcia pre spracovanie zberných dvorov a zobrazenie ich na mape
       print("prd");
-
     } else {
-      // TODO: Forget the user
+      // TODO: zrušenie zobrazenia dvorov na mape
       print("prd2");
     }
   });
+
   void _onCleanEvents(bool newValue) => setState(() {
     cleanEvents = newValue;
-
     if (cleanEvents) {
-      // TODO: Here goes your functionality that remembers the user.
+      // TODO: funkcia pre spracovanie clean eventov a zobrazenie ich na mape
       print("prd");
     } else {
-      // TODO: Forget the user
+      // TODO: zrušenie zobrazenia eventov na mape
       print("prd2");
     }
   });
 
+  // funkcia pre odhlásenie používateľa odoslanie odhlásenia na databázu pre spracovanie
     void logout() async {
       SharedPreferences localStorage = await SharedPreferences.getInstance();
       var userId = localStorage.getInt("id");

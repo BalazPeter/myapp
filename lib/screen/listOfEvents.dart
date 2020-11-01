@@ -4,7 +4,7 @@ class ListOfEvents extends StatefulWidget {
   @override
   _ListOfEvents createState() => _ListOfEvents();
 }
-
+//TODO: doplnenie zobrazovania eventov všetkých
 class _ListOfEvents extends State<ListOfEvents> {
   @override
   Widget build(BuildContext context) {
